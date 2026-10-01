@@ -4996,7 +4996,7 @@ body.touchUiEnabled #mobileFreeDragBtn.active{
 <div class="hint">吋數只用來快速填入毫米尺寸；所有擺盤與碰撞計算仍以毫米欄位為準。</div>
 </div></div></div>
 
-<div class="section primaryWorkpieceSection stepManagedSection sharedCollapsibleSection" data-collapse-key="primary" data-default-collapsed="false" id="primarySettingsSection"><button aria-expanded="true" class="sharedCollapseHeader" type="button"><span class="sharedCollapseArrow">▲</span><span class="sharedCollapseText"><span class="sharedCollapseTitle">工件設定</span><span class="sharedCollapseSummary"><span class="sharedSummaryLine">矩形</span><span class="sharedSummaryLine">200 mm × 200 mm</span><span class="sharedSummaryLine">間距 40 mm × 20 mm</span></span></span></button><div class="sharedCollapseBody">
+<div class="section primaryWorkpieceSection stepManagedSection sharedCollapsibleSection isCollapsed" data-collapse-key="primary" data-default-collapsed="true" id="primarySettingsSection"><button aria-expanded="true" class="sharedCollapseHeader" type="button"><span class="sharedCollapseArrow">▲</span><span class="sharedCollapseText"><span class="sharedCollapseTitle">工件設定</span><span class="sharedCollapseSummary"><span class="sharedSummaryLine">矩形</span><span class="sharedSummaryLine">200 mm × 200 mm</span><span class="sharedSummaryLine">間距 40 mm × 20 mm</span></span></span></button><div class="sharedCollapseBody">
 
 <div class="sectionStepControl" data-step-section="primarySettingsSection">
 <span>上下鍵微調量</span>
@@ -13379,18 +13379,21 @@ setMobileFineTuneOpen=function(open,panel=mobileActivePanel){
   }
 
   sections.forEach(section=>{
-    const key=section.dataset.collapseKey;
-    const defaultCollapsed=section.dataset.defaultCollapsed==="true";
-    let initialCollapsed=defaultCollapsed;
-
-    try{
-      const saved=localStorage.getItem(`traySimulator.sharedCollapse.${key}`);
-      if(saved==="collapsed")initialCollapsed=true;
-      if(saved==="expanded")initialCollapsed=false;
-    }catch(_error){}
+    // 四個左側設定區塊固定以「全部收合」作為每次載入的初始狀態，
+    // 不再使用 localStorage 恢復上次展開狀態。
+    const initialCollapsed=true;
 
     section.querySelector(".sharedCollapseHeader")?.addEventListener("click",()=>{
-      setCollapsed(section,!section.classList.contains("isCollapsed"));
+      const willExpand=section.classList.contains("isCollapsed");
+
+      // 採單一展開模式：展開目前區塊時，其他三個立即收合。
+      if(willExpand){
+        sections.forEach(other=>{
+          if(other!==section)setCollapsed(other,true);
+        });
+      }
+
+      setCollapsed(section,!willExpand);
     });
 
     section.addEventListener("input",()=>renderSummary(section));
